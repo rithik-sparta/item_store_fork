@@ -4,9 +4,7 @@ __pycache__
 TODO.txt
 env
 .vscode
-requirements.txt
 .dockerignore
-backend/Dockerfile
 productsSQL
 .DS_Store
 run
