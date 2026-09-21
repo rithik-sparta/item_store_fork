@@ -3,7 +3,7 @@ services:
         image: rithik256/item-store:frontend
         container_name: frontend
         build:
-            context: ./frontend/item-store
+            context: ./frontend
             dockerfile: Dockerfile
         ports:
           - "3000:80"
