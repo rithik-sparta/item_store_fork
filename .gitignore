@@ -13,3 +13,4 @@ run
 db_volume/data/*
 !db_volume/data/.gitkeep
 /backend/static
+.venv
