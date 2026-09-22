@@ -125,6 +125,82 @@ export function AddProductToBasketForm(props){
     )
 }
 
+export function FavouriteToggleButton({ productId }) {
+    const { isAuthenticated } = useAuth()
+    const [isFavourite, setIsFavourite] = useState(false)
+    const [message, setMessage] = useState("")
+
+    useEffect(() => {
+        if (!isAuthenticated) {
+            setIsFavourite(false)
+            return
+        }
+
+        const fetchFavouriteStatus = async () => {
+            const response = await fetch(url + `/favourites/${productId}/`, {
+                method: "GET",
+                mode: "cors",
+                headers: getHeaders(),
+                credentials: "include",
+            })
+
+            if (response.ok) {
+                setIsFavourite(true)
+                return
+            }
+
+            if (response.status === 404) {
+                setIsFavourite(false)
+                return
+            }
+
+            throw Error("Unable to check favourite status")
+        }
+
+        fetchFavouriteStatus().catch((error) => {
+            console.error(error)
+            setMessage("Unable to check favourite status")
+        })
+    }, [isAuthenticated, productId])
+
+    const handleToggle = async () => {
+        if (!isAuthenticated) {
+            return
+        }
+
+        const response = await fetch(url + "/favourites/", {
+            method: "POST",
+            mode: "cors",
+            headers: getHeaders(),
+            credentials: "include",
+            body: JSON.stringify({ product: productId }),
+        })
+
+        const json = await response.json()
+
+        if (!response.ok) {
+            setMessage(json.detail || "Unable to update favourites")
+            return
+        }
+
+        setIsFavourite(json.is_favourite)
+        setMessage(json.detail)
+    }
+
+    if (!isAuthenticated) {
+        return null
+    }
+
+    return (
+        <div className="my-3">
+            <button className="btn btn-outline-danger" onClick={handleToggle}>
+                {isFavourite ? "Remove from Favourites" : "Add to Favourites"}
+            </button>
+            {message && <div className="mt-2 text-info">{message}</div>}
+        </div>
+    )
+}
+
 export function ProductDetailView(){
     /*
     Have product details
@@ -171,15 +247,9 @@ export function ProductDetailView(){
         <>
             <Product key={1} values={data} />
             {isAuthenticated && <AddProductToBasketForm id={params.id} />}
-            {/* {isAuthenticated && <ReviewForm product={params.id} />}
-            <Reviews product={params.id}/> */}
+            {isAuthenticated && <FavouriteToggleButton productId={params.id} />}
             <ReviewsComponent product={params.id} />
         </>
     )
-
-
-
-
-
-
 }
+

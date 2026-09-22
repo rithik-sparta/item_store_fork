@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from products.serializers import ProductSerializer
-from item_store.models import Customer, OrderNumber, Review, Basket, Order, Product
+from item_store.models import Customer, OrderNumber, Review, Basket, Order, Product, Favourite
 
 from rest_framework.relations import HyperlinkedIdentityField, HyperlinkedRelatedField
 from rest_framework.reverse import reverse
@@ -90,6 +90,25 @@ class CreateReviewSerializer(serializers.ModelSerializer):
         has_review = Review.objects.filter(customer=data['customer'], product=data['product']).exists()
         if has_review:
             raise serializers.ValidationError("Customer already has a review for this product")
+        return data
+
+
+class FavouriteSerializer(serializers.ModelSerializer):
+    customer = CustomerSerializer()
+    product = ProductSerializer()
+
+    class Meta:
+        model = Favourite
+        fields = '__all__'
+
+
+class ToggleFavouriteSerializer(serializers.Serializer):
+    product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all())
+
+    def validate(self, data):
+        product = data['product']
+        if product is None:
+            raise serializers.ValidationError("Please supply a product to favourite.")
         return data
     
 class BasketSerializer(serializers.ModelSerializer):

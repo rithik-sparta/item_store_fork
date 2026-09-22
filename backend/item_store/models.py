@@ -3,6 +3,7 @@ from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator 
 from products.models import Product
 from django.contrib.auth.models import AbstractUser
+from django.utils import timezone
 from decimal import Decimal
 
 # Create your models here.
@@ -41,12 +42,24 @@ class Review(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     rating = models.PositiveIntegerField(default=1,validators=[MinValueValidator(1),MaxValueValidator(5)])
     comment = models.TextField()
+    date = models.DateTimeField(default=timezone.now)
     
     class Meta:
         unique_together = ('customer','product')
     
     def __str__(self):
         return f"{self.customer} {self.product} {self.rating}"
+
+
+class Favourite(models.Model):
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('customer', 'product')
+
+    def __str__(self):
+        return f"{self.customer} {self.product}"
     
 class Basket(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)

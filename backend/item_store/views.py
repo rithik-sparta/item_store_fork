@@ -8,9 +8,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from e_store.permissions import IsOwnerPermission, ReviewPermission
 from products.models import Product
-from products.serializers import UpdateProductSerializer
-from item_store.models import Order, OrderNumber, Review, Basket, Customer
-from item_store.serializers import BasketListViewSerializer, CreateOrderSerializer, OrderNumberSerializer, CreateReviewSerializer,ReviewSerializer, BasketSerializer, ChangeBasketQuantitySerializer
+from products.serializers import ProductSerializer, UpdateProductSerializer
+from item_store.models import Order, OrderNumber, Review, Basket, Customer, Favourite
+from item_store.serializers import BasketListViewSerializer, CreateOrderSerializer, OrderNumberSerializer, CreateReviewSerializer,ReviewSerializer, BasketSerializer, ChangeBasketQuantitySerializer, FavouriteSerializer, ToggleFavouriteSerializer
 from django.utils.decorators import method_decorator
 
 def paginate(request,data,paginator):
@@ -35,11 +35,16 @@ class ReviewViewSet(
     def get_reviews_for_product(self,request,product_id=None):
         queryset = self.get_queryset()
         queryset = self.filter_queryset(queryset)
-        query_filter = {}
-        query_filter['product_id'] = self.kwargs['product_id']
-        queryset = queryset.filter(**query_filter)
+        queryset = queryset.filter(product_id=self.kwargs['product_id'])
+
+        sort_by = request.query_params.get('sort_by', 'id')
+        order = request.query_params.get('order', 'asc')
+        valid_sort_fields = {'id', 'rating', 'date'}
+        sort_field = sort_by if sort_by in valid_sort_fields else 'id'
+        ordering = '-' if str(order).lower() == 'desc' else ''
+        queryset = queryset.order_by(f'{ordering}{sort_field}')
+
         serializer = ReviewSerializer(queryset,many=True,context = {"request":request})
-        
         return paginate(request,serializer.data,self.paginator)
             
         
@@ -78,6 +83,47 @@ class ReviewViewSet(
 
 # Basket: Customers should be able to view their basket, add items to their basket and remove items from their basket.
 # @method_decorator(csrf_protect,name='dispatch')
+class FavouriteViewSet(
+    viewsets.GenericViewSet
+):
+    permission_classes = [IsAuthenticated]
+    serializer_class = FavouriteSerializer
+    queryset = Favourite.objects.all().order_by('id')
+    lookup_field = 'product_id'
+
+    def get_queryset(self):
+        return Favourite.objects.filter(customer=self.request.user).select_related('product', 'customer').order_by('-id')
+
+    def list(self, request):
+        favourites = self.get_queryset()
+        serializer = FavouriteSerializer(favourites, many=True, context={'request': request})
+        return paginate(request, serializer.data, self.paginator)
+
+    def get_object(self):
+        try:
+            return self.get_queryset().get(product_id=self.kwargs[self.lookup_field])
+        except Favourite.DoesNotExist:
+            raise NotFound("Favourite not found.")
+
+    def retrieve(self, request, product_id=None):
+        favourite = self.get_object()
+        serializer = FavouriteSerializer(favourite, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def create(self, request):
+        serializer = ToggleFavouriteSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        product = serializer.validated_data['product']
+        favourite = Favourite.objects.filter(customer=request.user, product=product).first()
+
+        if favourite:
+            favourite.delete()
+            return Response({"success": True, "is_favourite": False, "detail": "Product removed from favourites", "product": ProductSerializer(product).data}, status=status.HTTP_200_OK)
+
+        Favourite.objects.create(customer=request.user, product=product)
+        return Response({"success": True, "is_favourite": True, "detail": "Product added to favourites", "product": ProductSerializer(product).data}, status=status.HTTP_200_OK)
+
+
 class BasketViewSet(
     viewsets.GenericViewSet
     ):

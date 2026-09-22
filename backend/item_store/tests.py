@@ -2,9 +2,10 @@ from decimal import Decimal
 from django.test import TestCase
 from rest_framework.test import APITestCase, APIClient, api_settings
 import math
-from datetime import date
+from datetime import date, timedelta
+from django.utils import timezone
 
-from item_store.models import Basket, Customer, Order, OrderNumber, Review
+from item_store.models import Basket, Customer, Order, OrderNumber, Review, Favourite
 from products.models import Product
 
 # Create your tests here.
@@ -149,7 +150,119 @@ class ReviewTestCase(APITestCase):
         body = response.json()
         assert(response.status_code==403)
         assert(body['detail']=="You do not have permission to perform this action.")
-        
+
+    def test_sort_reviews_by_rating(self):
+        product = Product.objects.get(name="Book")
+        base_date = timezone.now() - timedelta(days=10)
+
+        low_rating_customer = Customer.objects.create_user(
+            username='low_rater',
+            email='low.rater@example.com',
+            password='reviewpassword123'
+        )
+        high_rating_customer = Customer.objects.create_user(
+            username='high_rater',
+            email='high.rater@example.com',
+            password='reviewpassword123'
+        )
+        older_customer = Customer.objects.create_user(
+            username='older_rater',
+            email='older.rater@example.com',
+            password='reviewpassword123'
+        )
+
+        Review.objects.create(customer=low_rating_customer, product=product, rating=1, comment='low', date=base_date + timedelta(days=4))
+        Review.objects.create(customer=high_rating_customer, product=product, rating=5, comment='great', date=base_date + timedelta(days=1))
+        Review.objects.create(customer=older_customer, product=product, rating=4, comment='older', date=base_date + timedelta(days=8))
+        Review.objects.create(customer=self.user, product=product, rating=3, comment='okay', date=base_date + timedelta(days=2))
+
+        response = self.client.get(f"/reviews/{product.id}/?sort_by=rating&order=desc")
+        assert(response.status_code == 200)
+        ratings = [item['rating'] for item in response.json()['results']]
+        assert(ratings == [5, 4, 3, 1])
+
+    def test_sort_reviews_by_date(self):
+        product = Product.objects.get(name="Book")
+        base_date = timezone.now() - timedelta(days=10)
+
+        low_rating_customer = Customer.objects.create_user(
+            username='low_rater_date',
+            email='low.rater.date@example.com',
+            password='reviewpassword123'
+        )
+        high_rating_customer = Customer.objects.create_user(
+            username='high_rater_date',
+            email='high.rater.date@example.com',
+            password='reviewpassword123'
+        )
+        older_customer = Customer.objects.create_user(
+            username='older_rater_date',
+            email='older.rater.date@example.com',
+            password='reviewpassword123'
+        )
+
+        Review.objects.create(customer=low_rating_customer, product=product, rating=1, comment='low', date=base_date + timedelta(days=4))
+        Review.objects.create(customer=high_rating_customer, product=product, rating=5, comment='great', date=base_date + timedelta(days=1))
+        Review.objects.create(customer=older_customer, product=product, rating=4, comment='older', date=base_date + timedelta(days=8))
+        Review.objects.create(customer=self.user, product=product, rating=3, comment='okay', date=base_date + timedelta(days=2))
+
+        response = self.client.get(f"/reviews/{product.id}/?sort_by=date&order=asc")
+        assert(response.status_code == 200)
+        dates = [item['date'] for item in response.json()['results']]
+        assert(dates == sorted(dates))
+
+class FavouriteTestCase(APITestCase):
+    fixtures = [
+        "products/fixtures/products.json",
+        "item_store/fixtures/basket.json",
+        "item_store/fixtures/customer.json",
+        "item_store/fixtures/ordernumber.json",
+        "item_store/fixtures/order.json",
+        "item_store/fixtures/review.json"
+    ]
+
+    @classmethod
+    def setUpClass(cls):
+        super(FavouriteTestCase, cls).setUpClass()
+        user = Customer.objects.get(username='test', email='testuser@testuser.com')
+        user.set_password('testpassword123')
+        user.save()
+        cls.user = user
+
+    def setUp(self):
+        self.client = APIClient()
+
+    def tearDown(self):
+        self.client.logout()
+        Favourite.objects.all().delete()
+
+    def test_favourite_product_toggle_and_user_scope(self):
+        product = Product.objects.get(name='Pen')
+
+        response = self.client.post('/favourites/', data={'product': product.id}, format='json')
+        assert(response.status_code == 403)
+
+        self.client.login(username='test', password='testpassword123')
+
+        response = self.client.post('/favourites/', data={'product': product.id}, format='json')
+        assert(response.status_code == 200)
+        assert(response.json()['is_favourite'] is True)
+        assert(Favourite.objects.filter(customer=self.user, product=product).exists())
+
+        response = self.client.get(f'/favourites/{product.id}/')
+        assert(response.status_code == 200)
+        assert(response.json()['product']['id'] == product.id)
+
+        response = self.client.post('/favourites/', data={'product': product.id}, format='json')
+        assert(response.status_code == 200)
+        assert(response.json()['is_favourite'] is False)
+        assert(not Favourite.objects.filter(customer=self.user, product=product).exists())
+
+        response = self.client.get('/favourites/')
+        assert(response.status_code == 200)
+        assert(response.json()['count'] == 0)
+        assert(len(response.json()['results']) == 0)
+
 class BasketTestCase(APITestCase):
     fixtures = [
         "products/fixtures/products.json",
