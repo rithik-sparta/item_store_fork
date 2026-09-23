@@ -9,7 +9,10 @@ function PaginatedView({endpoint,item,msg,displayClass,rerender}){
     const [url, setUrl] = useState(endpoint)
     const [error,setError] = useState(null)
 
-  
+    useEffect(() => {
+        setUrl(endpoint)
+    }, [endpoint])
+
     useEffect(() => {
         const controller = new AbortController();
         const abort_signal = controller.signal

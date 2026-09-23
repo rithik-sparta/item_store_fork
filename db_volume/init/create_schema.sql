@@ -397,6 +397,7 @@ CREATE TABLE public.item_store_review (
     id bigint NOT NULL,
     rating integer NOT NULL,
     comment text NOT NULL,
+    date timestamp with time zone NOT NULL,
     customer_id bigint NOT NULL,
     product_id bigint NOT NULL,
     CONSTRAINT item_store_review_rating_check CHECK ((rating >= 0))
@@ -626,6 +627,26 @@ COPY public.item_store_basket (id, quantity, customer_id, product_id) FROM stdin
 --
 
 COPY public.item_store_customer (id, last_login, is_superuser, first_name, last_name, is_staff, is_active, date_joined, username, password, email, total_basket_cost) FROM stdin;
+1	\N	f	Ava	Brown	f	t	2024-01-05 09:00:00+00	ava_brown	password123	ava.brown@example.com	0.00
+2	\N	f	Liam	Smith	f	t	2024-01-06 09:15:00+00	liam_smith	password123	liam.smith@example.com	0.00
+3	\N	f	Noah	Johnson	f	t	2024-01-07 10:30:00+00	noah_johnson	password123	noah.johnson@example.com	0.00
+4	\N	f	Emma	Wilson	f	t	2024-01-09 11:00:00+00	emma_wilson	password123	emma.wilson@example.com	0.00
+5	\N	f	Olivia	Taylor	f	t	2024-01-10 12:45:00+00	olivia_taylor	password123	olivia.taylor@example.com	0.00
+6	\N	f	Lucas	Thomas	f	t	2024-01-12 08:30:00+00	lucas_thomas	password123	lucas.thomas@example.com	0.00
+7	\N	f	Isabella	Moore	f	t	2024-01-14 14:10:00+00	isabella_moore	password123	isabella.moore@example.com	0.00
+8	\N	f	Mason	Martin	f	t	2024-01-15 16:20:00+00	mason_martin	password123	mason.martin@example.com	0.00
+9	\N	f	Sophia	Lee	f	t	2024-01-16 07:50:00+00	sophia_lee	password123	sophia.lee@example.com	0.00
+10	\N	f	James	Walker	f	t	2024-01-19 09:45:00+00	james_walker	password123	james.walker@example.com	0.00
+11	\N	f	Mia	Hall	f	t	2024-01-21 12:05:00+00	mia_hall	password123	mia.hall@example.com	0.00
+12	\N	f	Benjamin	Allen	f	t	2024-01-22 15:30:00+00	benjamin_allen	password123	benjamin.allen@example.com	0.00
+13	\N	f	Charlotte	Young	f	t	2024-01-24 10:10:00+00	charlotte_young	password123	charlotte.young@example.com	0.00
+14	\N	f	Henry	King	f	t	2024-01-26 13:40:00+00	henry_king	password123	henry.king@example.com	0.00
+15	\N	f	Amelia	Wright	f	t	2024-01-28 17:00:00+00	amelia_wright	password123	amelia.wright@example.com	0.00
+16	\N	f	Elijah	Scott	f	t	2024-02-02 08:55:00+00	elijah_scott	password123	elijah.scott@example.com	0.00
+17	\N	f	Harper	Green	f	t	2024-02-04 11:25:00+00	harper_green	password123	harper.green@example.com	0.00
+18	\N	f	Ethan	Baker	f	t	2024-02-06 09:35:00+00	ethan_baker	password123	ethan.baker@example.com	0.00
+19	\N	f	Evelyn	Adams	f	t	2024-02-08 14:50:00+00	evelyn_adams	password123	evelyn.adams@example.com	0.00
+20	\N	f	Daniel	Nelson	f	t	2024-02-10 18:10:00+00	daniel_nelson	password123	daniel.nelson@example.com	0.00
 \.
 
 
@@ -665,7 +686,27 @@ COPY public.item_store_ordernumber (id, date, customer_id, total_cost) FROM stdi
 -- Data for Name: item_store_review; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.item_store_review (id, rating, comment, customer_id, product_id) FROM stdin;
+COPY public.item_store_review (id, rating, comment, date, customer_id, product_id) FROM stdin;
+1	5	Excellent quality and shipped quickly.	2025-02-14 09:00:00+00	1	1
+2	4	Very useful for everyday writing.	2025-02-18 11:30:00+00	2	2
+3	3	Good value but the finish could be better.	2025-02-20 12:15:00+00	3	3
+4	5	Perfect for gaming and work sessions.	2025-03-02 15:25:00+00	4	4
+5	2	A bit too basic for the price.	2025-03-04 10:00:00+00	5	5
+6	4	Comfortable and great for daily wear.	2025-03-07 17:05:00+00	6	204
+7	5	The design looks premium and feels sturdy.	2025-03-09 13:40:00+00	7	205
+8	1	Not impressed with the fit.	2025-03-11 16:20:00+00	8	206
+9	4	Good quality and easy to match with outfits.	2025-03-14 08:35:00+00	9	207
+10	5	Bright colour and very comfortable.	2025-03-18 12:50:00+00	10	208
+11	3	Fine for the price, nothing special.	2025-03-22 09:15:00+00	11	209
+12	4	Keeps me warm and looks nice.	2025-04-02 14:10:00+00	12	210
+13	5	Soft material and a very flattering cut.	2025-04-05 19:45:00+00	13	211
+14	4	Sturdy and stylish enough for regular use.	2025-04-09 10:30:00+00	14	212
+15	5	Looks lovely and the weight feels solid.	2025-04-12 11:20:00+00	15	213
+16	3	Works well but the colour is a little different in person.	2025-04-17 18:05:00+00	16	214
+17	4	Really nice accessory and well made.	2025-04-20 07:55:00+00	17	215
+18	5	Great quality and easy to pair with outfits.	2025-04-25 09:40:00+00	18	216
+19	4	Solid item and good for casual wear.	2025-04-29 13:00:00+00	19	217
+20	5	Very happy with the look and finish.	2025-05-03 20:15:00+00	20	218
 \.
 
 
@@ -762,7 +803,7 @@ SELECT pg_catalog.setval('public.item_store_customer_groups_id_seq', 1, false);
 -- Name: item_store_customer_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.item_store_customer_id_seq', 2, true);
+SELECT pg_catalog.setval('public.item_store_customer_id_seq', 20, true);
 
 
 --
@@ -790,7 +831,7 @@ SELECT pg_catalog.setval('public.item_store_ordernumber_id_seq', 1, true);
 -- Name: item_store_review_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.item_store_review_id_seq', 14, true);
+SELECT pg_catalog.setval('public.item_store_review_id_seq', 20, true);
 
 
 --

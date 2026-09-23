@@ -27,6 +27,7 @@ export function Navigation(){
                     <NavLink className='nav-item navbar-item' to='/profile'>Profile</NavLink>
                     <NavLink className='nav-item navbar-item' to='/orders'>Orders</NavLink>
                     <NavLink className='nav-item navbar-item' to='/baskets'>Basket</NavLink>
+                    <NavLink className='nav-item navbar-item' to='/favourites'>Favourites</NavLink>
                     <NavLink className='nav-item navbar-item' to='/logout'>Log Out</NavLink>
                     </> :
                     ""

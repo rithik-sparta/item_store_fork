@@ -9,6 +9,7 @@ import {CookiesProvider} from "react-cookie"
 import {createBrowserRouter, createRoutesFromElements, Route, RouterProvider} from 'react-router-dom'
 import {ProfileView} from './Authentication/ProfileView'
 import { ProductDetailView, Products } from "./Product/product";
+import { FavouritesView } from "./Favourites/FavouritesView";
 import { Baskets } from "./Basket/basket";
 import {url} from "./constants"
 import { Orders, OrderDetails } from "./Order/order";
@@ -25,6 +26,7 @@ function CreateRoutes(){
         <Route element={<Navigation/>}>
             <Route index path = "" element = {<Products/>}/>
             <Route path = "/product/:id" element = {<ProductDetailView/>} />
+            <Route path = "/favourites" element = {<FavouritesView/>} />
             <Route path="/login" element = {<LogInView/>} />
             <Route path = "/logout" element = {<LogOutView/>} />
             <Route path = "/signup" element = {<SignUpView/>} />

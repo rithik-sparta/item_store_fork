@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from item_store.models import Customer, Order, OrderNumber, Review, Basket
+from item_store.models import Customer, Order, OrderNumber, Review, Basket, Favourite
 
 @admin.register(Customer)
 class CustomerAdmin(admin.ModelAdmin):
@@ -12,6 +12,10 @@ class ReviewAdmin(admin.ModelAdmin):
     
 @admin.register(Basket)
 class BasketAdmin(admin.ModelAdmin):
+    pass
+
+@admin.register(Favourite)
+class FavouriteAdmin(admin.ModelAdmin):
     pass
 
 @admin.register(Order)

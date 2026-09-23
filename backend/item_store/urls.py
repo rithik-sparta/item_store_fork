@@ -2,7 +2,7 @@ from rest_framework import routers
 from rest_framework.routers import DefaultRouter, Route
 from django.urls import include, path, re_path
 
-from item_store.views import ReviewViewSet, BasketViewSet, OrderViewSet
+from item_store.views import ReviewViewSet, BasketViewSet, OrderViewSet, FavouriteViewSet
 from products.views import ProductViewSet
 
 class ReviewRouter(DefaultRouter):
@@ -50,6 +50,8 @@ class OrderRouter(DefaultRouter):
 
 router = routers.SimpleRouter()
 router.register('baskets', BasketViewSet, basename='basket')
+favourite_router = routers.SimpleRouter()
+favourite_router.register('favourites', FavouriteViewSet, basename='favourite')
 order_router = OrderRouter()
 order_router.register('orders',OrderViewSet, basename='order')
 
@@ -60,6 +62,7 @@ review_router.register('reviews', ReviewViewSet, basename='review')
 urlpatterns = [
     path('',include(review_router.urls)),
     path('',include(router.urls)),
+    path('',include(favourite_router.urls)),
     path('',include(order_router.urls))
 ]
 
